@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection Plant Diseases</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e7d32; /* Rich green */
+            --primary-light: #e8f5e9; /* Light green */
+            --secondary: #1b5e20; /* Deep green */
+            --accent: #ffca28; /* Bright amber */
+            --text: #1a1a1a; /* Near-black text */
+            --text-light: #757575; /* Soft gray */
+            --background: #f0f4f8; /* Light blue-gray */
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.25);
+            --shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+            --blur: blur(12px);
+            --error: #d32f2f; /* Red for errors */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background-image: url('static/image/test.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3); /* Overlay for contrast */
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 90%;
+            margin: 2em;
+            padding: 2em;
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .heading-box {
+            padding: 1.2em;
+            margin-bottom: 1.5em;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .heading-box:hover {
+            transform: translateY(-5px);
+        }
+
+        .heading-box h1, .heading-box h2 {
+            font-weight: 700;
+            color: var(--white);
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .heading-box h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--white) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .heading-box h2 {
+            font-size: 1.8rem;
+        }
+
+        .result-box {
+            padding: 2em;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .predicted-image {
+            width: 100%;
+            max-width: 700px;
+            margin: 2em auto;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .predicted-image.loaded {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 1.5em 0;
+        }
+
+        li {
+            margin-bottom: 1em;
+            background: var(--white);
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            font-weight: 600;
+            color: var(--text);
+            transition: all 0.3s ease;
+        }
+
+        li:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-message {
+            color: var(--error);
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 1em;
+            background: rgba(211, 47, 47, 0.1);
+            border-radius: 10px;
+            margin-bottom: 1.5em;
+            box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2);
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            line-height: 1.6;
+            padding: 1em;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 1.5em;
+                margin: 1.5em;
+            }
+
+            .heading-box h1 {
+                font-size: 2rem;
+            }
+
+            .heading-box h2 {
+                font-size: 1.5rem;
+            }
+
+            .predicted-image {
+                max-width: 100%;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .heading-box h1 {
+                font-size: 1.8rem;
+            }
+
+            .heading-box h2 {
+                font-size: 1.3rem;
+            }
+
+            .result-box {
+                padding: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="heading-box">
+            <h1>Object Detection Plant Diseases</h1>
+        </div>
+        {% if error %}
+            <p class="error-message">{{ error }}</p>
+        {% else %}
+            <div class="result-box">
+                <div class="heading-box">
+                    <h2>Predicted Image:</h2>
+                </div>
+                <img class="predicted-image" src="{{ url_for('static', filename='predictions/predictions.jpg') }}" alt="Predicted Image" onload="this.classList.add('loaded')">
+                <div class="heading-box">
+                    <h2>Detected Class:</h2>
+                </div>
+                <ul>
+                    {% for obj in object_list %}
+                        <li>{{ obj }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="heading-box">
+                    <h2>Fertilizer Suggestions:</h2>
+                </div>
+                <p>{{ fertilizer_suggestions }}</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Ensure image loads with animation
+        document.querySelector('.predicted-image').addEventListener('load', function() {
+            this.classList.add('loaded');
+        });
+    </script>
+</body>
+</html>

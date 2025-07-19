@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Object Detection Plant Diseases</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e7d32; /* Rich green */
+            --primary-light: #e8f5e9; /* Light green */
+            --secondary: #1b5e20; /* Deep green */
+            --accent: #ffca28; /* Bright amber */
+            --text: #1a1a1a; /* Near-black text */
+            --text-light: #757575; /* Soft gray */
+            --background: #f0f4f8; /* Light blue-gray */
+            --white: #ffffff;
+            --glass: rgba(255, 255, 255, 0.25);
+            --shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+            --blur: blur(12px);
+            --error: #d32f2f; /* Red for errors */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('static/image/RICE PLANT (1).jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3); /* Overlay for better contrast */
+            z-index: 1;
+        }
+
+        header {
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            color: var(--text);
+            text-align: center;
+            padding: 1.5em 0;
+            width: 100%;
+            box-shadow: var(--shadow);
+            position: relative;
+            z-index: 2;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--text) 50%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        main {
+            max-width: 700px;
+            width: 90%;
+            padding: 3em;
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            margin: 2em;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        form {
+            margin-top: 2.5em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5em;
+        }
+
+        label {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: var(--white);
+            padding: 0.9em 2em;
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        label:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(46, 125, 50, 0.4);
+        }
+
+        label i {
+            margin-right: 10px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #submit-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+            color: var(--white);
+            padding: 0.9em 2.5em;
+            border: none;
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px rgba(255, 202, 40, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        #submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        #submit-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(255, 202, 40, 0.4);
+        }
+
+        #selected-image {
+            max-width: 100%;
+            margin-top: 2em;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        #selected-image.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        #result {
+            margin-top: 2.5em;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 1.5em;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .error {
+            color: var(--error);
+            margin-top: 0.8em;
+            font-weight: 600;
+        }
+
+        footer {
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            color: var(--text-light);
+            text-align: center;
+            padding: 1.5em 0;
+            width: 100%;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        footer p {
+            font-size: 0.9rem;
+        }
+
+        @media screen and (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            main {
+                padding: 2em;
+                margin: 1.5em;
+            }
+
+            form {
+                gap: 1em;
+            }
+
+            label, #submit-btn {
+                padding: 0.8em 2em;
+                font-size: 1rem;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            main {
+                padding: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Object Detection Plant Diseases</h1>
+    </header>
+
+    <main>
+        <form action="/process_image" method="post" enctype="multipart/form-data">
+            <label for="image"><i class="fas fa-upload"></i> Choose an Image</label>
+            <input type="file" id="image" name="image" accept="image/*" onchange="displayImage(this)" required>
+            <button id="submit-btn" type="submit">Detect Diseases</button>
+        </form>
+
+        <img id="selected-image" alt="Selected Image">
+
+        <div id="result">
+            <!-- The result will be displayed here -->
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            {% if reply %}
+                <p>{{ reply }}</p>
+            {% endif %}
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2025 Object Detection Plant Disease</p>
+    </footer>
+
+    <script>
+        function displayImage(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.getElementById('selected-image');
+                    img.src = e.target.result;
+                    img.classList.add('visible');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
